@@ -1,40 +1,58 @@
+import argparse
 import cv2
-import numpy as np
 import json
 import os
+import numpy as np
+
+'''
+This script combine VGG.json and img files to png images.
+'''
+
+# Input management
+ap = argparse.ArgumentParser()
+ap.add_argument("-fj", "--file_json", type=str, required=False, default=r"labels_VGG.json")
+ap.add_argument("-o", "--output", type=str, required=False, default=r"C:\Users\Susi\Desktop")
+ap.add_argument("-iw", "--width", type=int, required=False, default=1175)
+ap.add_argument("-ih", "--height", type=int, required=False, default=780)
 
 
 def get_fill_convex(img, points):
-    # triangle = numpy.array([[50, 30], [40, 80], [10, 90]], numpy.int32)
     cv2.fillConvexPoly(img, points, 1)
-    cv2.imshow("prueba", img)
-    cv2.waitKey(0)
+    return img
 
 
-def get_points(d, h, w):
+def get_points(d, h, w, out):
     with open(d) as f:
         data = json.load(f)
-    #image
+    # image
     for key in data.keys():
         img_c0 = np.zeros((h, w))
         img_c1 = np.zeros((h, w))
         images = data[key]["filename"]
-        #detection
+        # detection
         for key_det in data[key]["regions"].keys():
+            points = []
             p_x = data[key]["regions"][key_det]["shape_attributes"]["all_points_x"]
             p_y = data[key]["regions"][key_det]["shape_attributes"]["all_points_y"]
             tag = data[key]["regions"][key_det]["region_attributes"]["label"]
             # merge p_x and p_y
-            # if tag == c0 get_fill_convex(img_c0, points)
-            # else...
+            for p in range(len(p_x)):
+                points.append([p_x[p], p_y[p]])
+            points = np.array(points, np.int32)
+            if tag == "licence_plate":
+                img_c0 = img_c0 + get_fill_convex(img_c0, points)
+            else:
+                img_c1 = img_c1 + get_fill_convex(img_c1, points)
         # save images
-        cv2.imwrite(d.split('.')[0]+"_c0.png", img_c0)
-        cv2.imwrite(d.split('.')[0]+"_c1.png", img_c1)
-        print(images)
-    return images
+        cv2.imwrite(os.path.join(out, images.split('.')[0] + "_c0.png"), img_c0)
+        cv2.imwrite(os.path.join(out, images.split('.')[0] + "_c1.png"), img_c1)
 
 
 if __name__ == "__main__":
-    d = "labels_VGG.json"
-    points = get_points(d)
-    # get_fill_convex()
+    args = vars(ap.parse_args())
+    json_path = args['file_json']
+    output_path = args['output']
+    width = args['width']
+    height = args['height']
+
+    get_points(json_path, height, width, output_path)
