@@ -40,10 +40,12 @@ def get_points(d, h, w, out):
                 points.append([p_x[p], p_y[p]])
             points = np.array(points, np.int32)
             if tag == "licence_plate":
-                img_c0 = img_c0 + get_fill_convex(img_c0, points)
+                img_c0 = cv2.bitwise_or(img_c0, get_fill_convex(img_c0, points), img_c0)
             else:
-                img_c1 = img_c1 + get_fill_convex(img_c1, points)
+                img_c1 = cv2.bitwise_or(img_c1, get_fill_convex(img_c1, points), img_c1)
         # save images
+        img_c0 = cv2.normalize(img_c0, None, 0, 255, cv2.NORM_MINMAX)
+        img_c1 = cv2.normalize(img_c1, None, 0, 255, cv2.NORM_MINMAX)
         cv2.imwrite(os.path.join(out, images.split('.')[0] + "_c0.png"), img_c0)
         cv2.imwrite(os.path.join(out, images.split('.')[0] + "_c1.png"), img_c1)
 
