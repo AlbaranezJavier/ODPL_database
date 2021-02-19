@@ -13,7 +13,7 @@ from HelperNet.NetStructure.HNet import HelperNetV1
 This script contains all the necessary methods for training and inference processes.
 '''
 
-def load_mod(model, dim, learn_opt, learn_reg, start_epoch):
+def load4training(model, dim, learn_opt, learn_reg, start_epoch):
   inputs = Input(shape=dim)
   if model == "HelperNetV1":
     logdir = f'./Logs/{model}_{start_epoch}/'
@@ -27,7 +27,7 @@ def load_mod(model, dim, learn_opt, learn_reg, start_epoch):
   mod.summary()
   return mod, optimizer, loss_fn, train_acc_metric, valid_acc_metric, logdir
 
-def load_mod(model,dim):
+def load4inference(model,dim):
   inputs = Input(shape=dim)
   if model == "HelperNetV1":
     mod = Model(inputs, HelperNetV1(inputs))
@@ -53,35 +53,30 @@ def valid_step(x, y, model, valid_acc_metric):
     val_logits = model(x, training=False)
     valid_acc_metric.update_state(y, val_logits)
 
-def getpaths(json_path, img_path):
-    directories = []
-    annotations = []
+def getpaths(json_path, img_path, labels):
+    REG, SATT, RATT, ALLX, ALLY, LAB, NAME = "regions", "shape_attributes", "region_attributes", "all_points_x", "all_points_y", "label", "filename"
 
     with open(json_path) as i:
         data = json.load(i)
         i.close()
 
-    for key in data.keys():
-        img_c0 = []
-        img_c1 = []
-        # detection
-        for key_det in data[key]["regions"].keys():
+    directories = []
+    annotations = []
+
+    for key in data.keys(): # each image
+        path = data[key][NAME].split('-')
+        directories.append(img_path + '/' + path[0] + '/' + data[key][NAME])
+        regions = []
+        if len(data[key][REG]) > 0: # could be empty
+            regions = [[]]*len(labels)
             points = []
-            p_x = data[key]["regions"][key_det]["shape_attributes"]["all_points_x"]
-            p_y = data[key]["regions"][key_det]["shape_attributes"]["all_points_y"]
-            tag = data[key]["regions"][key_det]["region_attributes"]["label"]
-            # merge p_x and p_y
-            for p in range(len(p_x)):
-                points.append([p_x[p], p_y[p]])
-            points = np.array(points, np.int32)
-            if tag == "license_plate":
-                img_c0.append(points)
-            else:
-                img_c1.append(points)
-        annotations.append([img_c0, img_c1])
-        directory = key.split('_')[0] + '_' + key.split('_')[1]
-        d = os.path.join(img_path, directory)
-        directories.append(str(os.path.join(d, key)))
+            for i in range(len(data[key][REG])): # each region
+                points = np.stack([data[key][REG][i][SATT][ALLX],data[key][REG][i][SATT][ALLY]], axis=1)
+                for l in range(len(labels)): # depending label
+                    if data[key][REG][i][RATT][LAB] == labels[l]:
+                        regions[l].append(points)
+                        break
+        annotations.append(regions)
     return np.array(directories), np.array(annotations)
 
 # Carga las imagenes entre idx y idx + 1

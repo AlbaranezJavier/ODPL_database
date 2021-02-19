@@ -10,7 +10,8 @@ This script executes the training of the network.
 if __name__ == '__main__':
     # Data preparation
     inputs_rgb = r'C:\Users\TTe_J\Downloads\RGB'
-    inputs_json = r'C:\Users\TTe_J\Downloads\prueba.json'
+    inputs_json = r'C:\Users\TTe_J\Downloads\test2imagenes.json'
+    labels = ["license_plate", "head"]
     seed = 123
     label_size = (720, 1280, 3)
     split = 0.2
@@ -19,7 +20,7 @@ if __name__ == '__main__':
     valid_size = .10
     shuffle = True
 
-    rgb_paths, gt_paths = getpaths(inputs_json, inputs_rgb)
+    rgb_paths, gt_paths = getpaths(inputs_json, inputs_rgb, labels)
     X_train, X_valid, Y_train, Y_valid = train_test_split(rgb_paths, gt_paths, test_size=valid_size, random_state=seed,
                                                           shuffle=shuffle)
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
 
     # Variables
     model = "HelperNetV1"  # models = HelperNetV1
-    start_epoch = 228 # <= numero de epocas que ya ha entrenado
+    start_epoch = 232 # <= numero de epocas que ya ha entrenado
     end_epoch = 500
     learn_opt, learn_reg = 1e-5, 1e-2
     save_weights = True
@@ -44,7 +45,7 @@ if __name__ == '__main__':
     input_dims = (720, 1280, 3)
 
     # Seleccion de modelo
-    mod, optimizer, loss_fn, train_acc_metric, valid_acc_metric, logdir = load_mod(model, dim=input_dims,
+    mod, optimizer, loss_fn, train_acc_metric, valid_acc_metric, logdir = load4training(model, dim=input_dims,
                                                                                    learn_opt=learn_opt, learn_reg=learn_reg,
                                                                                    start_epoch=start_epoch)
 

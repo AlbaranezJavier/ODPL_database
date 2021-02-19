@@ -29,7 +29,7 @@ if __name__ == '__main__':
     os.makedirs(path_images_destination)
 
     # Cargo el modelo y sus pesos
-    mod = load_mod(model, dim=input_dims)
+    mod = load4inference(model, dim=input_dims)
     mod.load_weights(weights_path)
 
     # Load unlabeled images
