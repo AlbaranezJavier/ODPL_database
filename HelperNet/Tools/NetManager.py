@@ -69,7 +69,6 @@ def getpaths(json_path, img_path, labels):
         regions = []
         if len(data[key][REG]) > 0: # could be empty
             regions = [[]]*len(labels)
-            points = []
             for i in range(len(data[key][REG])): # each region
                 points = np.stack([data[key][REG][i][SATT][ALLX],data[key][REG][i][SATT][ALLY]], axis=1)
                 for l in range(len(labels)): # depending label

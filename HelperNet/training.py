@@ -10,7 +10,7 @@ This script executes the training of the network.
 if __name__ == '__main__':
     # Data preparation
     inputs_rgb = r'C:\Users\TTe_J\Downloads\RGB'
-    inputs_json = r'C:\Users\TTe_J\Downloads\test2imagenes.json'
+    inputs_json = r'C:\Users\TTe_J\Downloads\output.json'
     labels = ["license_plate", "head"]
     seed = 123
     label_size = (720, 1280, 3)
@@ -35,10 +35,10 @@ if __name__ == '__main__':
         f'Train batches: {len(batches_train)}, valid batches: {len(batches_valid)}')
 
     # Variables
-    model = "HelperNetV1"  # models = HelperNetV1
-    start_epoch = 232 # <= numero de epocas que ya ha entrenado
-    end_epoch = 500
-    learn_opt, learn_reg = 1e-5, 1e-2
+    model = "HelperNetV2"  # models = HelperNetV1
+    start_epoch = 0 # <= numero de epocas que ya ha entrenado
+    end_epoch = 250
+    learn_opt, learn_reg = 1e-3, 1e-2
     save_weights = True
     weights_path = f'./Models/{model}/epoch_'
     weights_path2load = f'{weights_path}{start_epoch}'
