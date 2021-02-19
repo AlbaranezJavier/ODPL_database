@@ -1,0 +1,53 @@
+{
+  "s0_0_0.png65036": {
+    "filename": "s0_0-0.png",
+    "size": 65036,
+    "regions": [
+      {
+        "shape_attributes": {
+          "name": "polygon",
+          "all_points_x": [
+            422,
+            382,
+            517
+          ],
+          "all_points_y": [
+            247,
+            372,
+            390
+          ]
+        },
+        "region_attributes": {
+          "label": "head"
+        }
+      },
+      {
+        "shape_attributes": {
+          "name": "polygon",
+          "all_points_x": [
+            626,
+            622,
+            818,
+            818
+          ],
+          "all_points_y": [
+            206,
+            469,
+            478,
+            203
+          ]
+        },
+        "region_attributes": {
+          "label": "license_plate"
+        }
+      }
+    ],
+    "file_attributes": {}
+  },
+  "s0_0_1.png125971": {
+    "filename": "s0_0-1.png",
+    "size": 125971,
+    "regions": [],
+    "file_attributes": {}
+  }
+}

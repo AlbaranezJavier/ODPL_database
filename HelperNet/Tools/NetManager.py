@@ -106,7 +106,7 @@ def get_mask(data, label_size):
 def mask2vgg(masks, labels, names, sizes, save_path=None):
     file = {}
     for i in range(len(masks)):
-        regions = {}
+        regions = []
         counter = 0
         for m in range(masks[i].shape[2]-1):
             contours, _ = cv2.findContours(masks[i][:, :, m], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -118,7 +118,7 @@ def mask2vgg(masks, labels, names, sizes, save_path=None):
                     countourX = contours[c][:, :, 0][:, 0].tolist()
                     countourY = contours[c][:, :, 1][:, 0].tolist()
 
-                regions[str(counter)] = {
+                regions.append({
                     "shape_attributes": {
                         "name": "polygon",
                         "all_points_x": countourX,
@@ -127,15 +127,14 @@ def mask2vgg(masks, labels, names, sizes, save_path=None):
                     "region_attributes": {
                         "label": labels[m]
                     }
-                }
+                })
                 counter += 1
         file[names[i]] = {
-            "fileref": "",
-            "size": sizes[i],
+
             "filename": names[i],
-            "base64_img_data": "",
-            "file_attributes": {},
-            "regions": regions
+            "size": sizes[i],
+            "regions": regions,
+            "file_attributes": {}
         }
 
     if save_path != None:
