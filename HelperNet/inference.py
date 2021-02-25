@@ -28,7 +28,7 @@ if __name__ == '__main__':
         shutil.rmtree(path_images_destination)
     os.makedirs(path_images_destination)
 
-    # Cargo el modelo y sus pesos
+    # Load the model and weigths
     mod = load4inference(model, dim=input_dims)
     mod.load_weights(weights_path)
 

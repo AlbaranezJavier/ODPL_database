@@ -27,7 +27,7 @@ if __name__ == '__main__':
     print(f'Size: {len(rgb_paths)}')
     print(f'Train: {len(X_train)} y valid: {len(X_valid)}')
 
-    # Mini-lotes
+    # Mini-batches
     batches_valid = batch_division(X_valid, batch_size)
     batches_train = batch_division(X_train, batch_size)
 
@@ -44,7 +44,7 @@ if __name__ == '__main__':
     weights_path2load = f'{weights_path}{start_epoch}'
     input_dims = (720, 1280, 3)
 
-    # Seleccion de modelo
+    # Model selection
     mod, optimizer, loss_fn, train_acc_metric, valid_acc_metric, logdir = load4training(model, dim=input_dims,
                                                                                    learn_opt=learn_opt, learn_reg=learn_reg,
                                                                                    start_epoch=start_epoch)
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         mod.load_weights(weights_path2load)
         print(f'Pesos del modelo {model}_epoch{start_epoch} cargados con éxito!')
 
-    # Gestion de metricas
+    # metrics management
     if not os.path.exists(logdir):
         os.makedirs(logdir)
     now = datetime.now()
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         valid_acc = valid_acc_metric.result() * 100.
         valid_acc_metric.reset_states()
 
-        # Guarda los estadisticos y los muestra por pantalla
+        # Print and save the metrics
         end_time = round((time.time() - start_time) / 60, 2)
         writer = open(logdir + now.strftime("%d_%m_%Y__%H_%M_%S") + ".txt", "a")
         writer.write(f'{epoch};{train_loss};{train_acc};{valid_acc};{end_time}\n')
@@ -95,7 +95,7 @@ if __name__ == '__main__':
               f'Epoch {epoch}, Train_loss: {train_loss}, Train_acc: {train_acc}, Valid_acc: {valid_acc}, Time: {end_time}',
               end='')
 
-        # Guarda los pesos del modelo en cada época
+        # Saves the weights of the model if it obtains the best result in validation
         if valid_acc > best and save_weights:
             best = valid_acc
             mod.save_weights(f'{weights_path}{epoch}')

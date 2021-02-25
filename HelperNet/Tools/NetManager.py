@@ -13,19 +13,20 @@ from HelperNet.NetStructure.HNet import HelperNetV1
 This script contains all the necessary methods for training and inference processes.
 '''
 
+# Model management
 def load4training(model, dim, learn_opt, learn_reg, start_epoch):
-  inputs = Input(shape=dim)
-  if model == "HelperNetV1":
-    logdir = f'./Logs/{model}_{start_epoch}/'
-    mod = Model(inputs, HelperNetV1(inputs, learn_reg))
-  else:
-    print("ERROR load_mod")
-  optimizer = RMSprop(learn_opt)
-  loss_fn = CategoricalCrossentropy(from_logits=False)
-  train_acc_metric = CategoricalAccuracy()
-  valid_acc_metric = CategoricalAccuracy()
-  mod.summary()
-  return mod, optimizer, loss_fn, train_acc_metric, valid_acc_metric, logdir
+    inputs = Input(shape=dim)
+    if model == "HelperNetV1":
+        logdir = f'./Logs/{model}_{start_epoch}/'
+        mod = Model(inputs, HelperNetV1(inputs, learn_reg))
+    else:
+        print("ERROR load_mod")
+    optimizer = RMSprop(learn_opt)
+    loss_fn = CategoricalCrossentropy(from_logits=False)
+    train_acc_metric = CategoricalAccuracy()
+    valid_acc_metric = CategoricalAccuracy()
+    mod.summary()
+    return mod, optimizer, loss_fn, train_acc_metric, valid_acc_metric, logdir
 
 def load4inference(model,dim):
   inputs = Input(shape=dim)
@@ -37,6 +38,7 @@ def load4inference(model,dim):
   mod.summary()
   return mod
 
+# Training and validation steps
 @tf.function
 def train_step(x, y, model, loss_fn, optimizer, train_acc_metric):
     with tf.GradientTape() as tape:
@@ -53,7 +55,15 @@ def valid_step(x, y, model, valid_acc_metric):
     val_logits = model(x, training=False)
     valid_acc_metric.update_state(y, val_logits)
 
+# Input data management
 def getpaths(json_path, img_path, labels):
+    '''
+    Obtains the addresses of the input data
+    :param json_path: address of the file with the image labels
+    :param img_path: address of the folder with all the images
+    :param labels: classes to detect
+    :return: numpy arrays with the directories and the annotations
+    '''
     REG, SATT, RATT, ALLX, ALLY, LAB, NAME = "regions", "shape_attributes", "region_attributes", "all_points_x", "all_points_y", "label", "filename"
 
     with open(json_path) as i:
@@ -78,7 +88,48 @@ def getpaths(json_path, img_path, labels):
         annotations.append(regions)
     return np.array(directories), np.array(annotations)
 
-# Carga las imagenes entre idx y idx + 1
+def doNothing():
+    return 0
+
+def getInto(path, dest_path, labeled, unlabeled, names, sizes, limit, function=doNothing):
+    stop = False
+    [_, dirnames, filenames] = next(os.walk(path, topdown=True))
+    for folder in dirnames:
+        unlabeled, names, sizes, stop = getInto(path + "/" + folder, dest_path, labeled, unlabeled, names, sizes, limit, function=function)
+        if stop:
+            break
+    for file in filenames:
+        if len(unlabeled) >= limit:
+            stop = True
+            break
+        unlabeled, names, sizes = function(path, dest_path, file, labeled, unlabeled, names, sizes)
+    return unlabeled, names, sizes, stop
+
+def isUnlabeled(path, dest_path, file, labeled, unlabeled, names, sizes):
+    if file not in labeled:
+        unlabeled.append(path + "/" + file)
+        names.append(file)
+        sizes.append(os.stat(unlabeled[-1]).st_size)
+        shutil.copyfile(unlabeled[-1], dest_path + "/" + file)
+    return unlabeled, names, sizes
+
+def loadUnlabeled(path_json, path_images, path_images_dest, limit):
+    with open(path_json) as i:
+        data = json.load(i)
+        i.close()
+
+    labeled = set(data.keys())
+    unlabeled = []
+    names = []
+    sizes = []
+
+    unlabeled, names, sizes, _ = getInto(path_images, path_images_dest, labeled, unlabeled, names, sizes, limit, isUnlabeled)
+
+    unlabeled = np.array([cv2.imread(unlab).astype('float32') for unlab in unlabeled]) / 255.
+
+    return unlabeled, names, sizes
+
+# Management of image batches
 def batch_x(paths, idx, ending):
   x = [cv.imread(path).astype('float32') for path in paths[idx:ending]]
   return np.array(x) / 255.
@@ -87,11 +138,11 @@ def batch_y(labels, idx, ending, label_size):
   y = [get_mask(label, label_size) for label in labels[idx:ending]]
   return np.array(y)
 
-# Divide el conjunto de entrenamiento en lotes
 def batch_division(set, batch_size):
   batch_idx = np.arange(0,len(set), batch_size)
   return batch_idx
 
+# Annotation management
 def get_mask(data, label_size):
     img = np.zeros(label_size, dtype=np.uint8)
     for lab in range(label_size[2]-1):
@@ -204,44 +255,3 @@ def mask2coco(masks, labels, names, save_path=None):
             outfile.write(json_file)
             outfile.close()
     return file
-
-def doNothing():
-    return 0
-
-def getInto(path, dest_path, labeled, unlabeled, names, sizes, limit, function=doNothing):
-    stop = False
-    [_, dirnames, filenames] = next(os.walk(path, topdown=True))
-    for folder in dirnames:
-        unlabeled, names, sizes, stop = getInto(path + "/" + folder, dest_path, labeled, unlabeled, names, sizes, limit, function=function)
-        if stop:
-            break
-    for file in filenames:
-        if len(unlabeled) >= limit:
-            stop = True
-            break
-        unlabeled, names, sizes = function(path, dest_path, file, labeled, unlabeled, names, sizes)
-    return unlabeled, names, sizes, stop
-
-def isUnlabeled(path, dest_path, file, labeled, unlabeled, names, sizes):
-    if file not in labeled:
-        unlabeled.append(path + "/" + file)
-        names.append(file)
-        sizes.append(os.stat(unlabeled[-1]).st_size)
-        shutil.copyfile(unlabeled[-1], dest_path + "/" + file)
-    return unlabeled, names, sizes
-
-def loadUnlabeled(path_json, path_images, path_images_dest, limit):
-    with open(path_json) as i:
-        data = json.load(i)
-        i.close()
-
-    labeled = set(data.keys())
-    unlabeled = []
-    names = []
-    sizes = []
-
-    unlabeled, names, sizes, _ = getInto(path_images, path_images_dest, labeled, unlabeled, names, sizes, limit, isUnlabeled)
-
-    unlabeled = np.array([cv2.imread(unlab).astype('float32') for unlab in unlabeled]) / 255.
-
-    return unlabeled, names, sizes
