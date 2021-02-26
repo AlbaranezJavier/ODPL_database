@@ -11,9 +11,9 @@ if __name__ == '__main__':
     path_images_destination = r"C:\Users\TTe_J\Downloads\new_RGBs"
     path_json = r'C:\Users\TTe_J\Downloads\labels_vgg.json'
     path_newlabels = r'C:\Users\TTe_J\Downloads\new_labels.json'
-    limit = 40 # unlabeled image limit
+    limit = 50 # unlabeled image limit
     model = "HelperNetV1" # models = HelperNetV1
-    start_epoch = 232 # <= trained epochs
+    start_epoch = 240 # <= trained epochs
     input_dims = (720, 1280, 3)
     weights_path = f"./Models/{model}/epoch_{start_epoch}"
     labels = ['license_plate', 'head']

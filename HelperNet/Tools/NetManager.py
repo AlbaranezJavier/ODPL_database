@@ -21,6 +21,8 @@ def load4training(model, dim, learn_opt, learn_reg, start_epoch):
         mod = Model(inputs, HelperNetV1(inputs, learn_reg))
     else:
         print("ERROR load_mod")
+        print(exit)
+        exit()
     optimizer = RMSprop(learn_opt)
     loss_fn = CategoricalCrossentropy(from_logits=False)
     train_acc_metric = CategoricalAccuracy()
@@ -76,11 +78,10 @@ def getpaths(json_path, img_path, labels):
     for key in data.keys(): # each image
         path = data[key][NAME].split('-')
         directories.append(img_path + '/' + path[0] + '/' + data[key][NAME])
-        regions = []
+        regions = [[] for l in range(len(labels))]
         if len(data[key][REG]) > 0: # could be empty
-            regions = [[]]*len(labels)
             for i in range(len(data[key][REG])): # each region
-                points = np.stack([data[key][REG][i][SATT][ALLX],data[key][REG][i][SATT][ALLY]], axis=1)
+                points = np.stack([data[key][REG][i][SATT][ALLX], data[key][REG][i][SATT][ALLY]], axis=1).astype(int)
                 for l in range(len(labels)): # depending label
                     if data[key][REG][i][RATT][LAB] == labels[l]:
                         regions[l].append(points)

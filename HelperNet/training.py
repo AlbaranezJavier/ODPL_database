@@ -10,7 +10,7 @@ This script executes the training of the network.
 if __name__ == '__main__':
     # Data preparation
     inputs_rgb = r'C:\Users\TTe_J\Downloads\RGB'
-    inputs_json = r'C:\Users\TTe_J\Downloads\output.json'
+    inputs_json = r'C:\Users\TTe_J\Downloads\labels_vgg.json'
     labels = ["license_plate", "head"]
     seed = 123
     label_size = (720, 1280, 3)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         f'Train batches: {len(batches_train)}, valid batches: {len(batches_valid)}')
 
     # Variables
-    model = "HelperNetV2"  # models = HelperNetV1
+    model = "HelperNetV1"  # models = HelperNetV1
     start_epoch = 0 # <= numero de epocas que ya ha entrenado
     end_epoch = 250
     learn_opt, learn_reg = 1e-3, 1e-2
